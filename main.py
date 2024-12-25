@@ -76,7 +76,10 @@ def process_csv(csv_file):
                 print(f"Maximum email limit ({MAX_EMAILS}) reached. Stopping process.")
                 break
 
-            first_name = row.get("FirstName", "")
+            fullname = row.get("Contact1Name", "").split(' ', 1)
+            first_name = fullname[0] if fullname else ""
+            last_name = fullname[1] if len(fullname) > 1 else ""
+
             property_address = row.get("PropertyAddress", "")
             email1 = row.get("Contact1Email_1", "")
             email2 = row.get("Contact1Email_2", "")
@@ -93,8 +96,12 @@ def process_csv(csv_file):
             else:
                 continue
 
-            if send_email(client, to_recipient, bcc_recipient, first_name, property_address, email_count):
-                email_count += 1
+            if first_name and (to_recipient or bcc_recipient):  # Only proceed if there's a valid name and email
+                if send_email(client, to_recipient, bcc_recipient, first_name, property_address, email_count):
+                    email_count += 1
+
+            else:
+                print(f"Skipping email for row with empty name: {row}")
 
         print(f"Email sending process completed. Total emails sent: {email_count}")
 
